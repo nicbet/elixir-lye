@@ -36,37 +36,37 @@ be found at [https://hexdocs.pm/lye](https://hexdocs.pm/lye).
 ## RoadMap
 
 #### Basic Structs
-[x] Environment
-[x] Asset
-[x] Processor
+- [x] Environment
+- [x] Asset
+- [x] Processor
 
 #### Functionality
-[x] Loading of assets
-[x] Caching of loaded assets
-[ ] Development mode
-[ ] Production mode
-[ ] Manifests
-[ ] Saving compiled assets to disk
-[ ] Plug / Phoenix integration
+- [x] Loading of assets
+- [x] Caching of loaded assets
+- [ ] Development mode
+- [ ] Production mode
+- [ ] Manifests
+- [ ] Saving compiled assets to disk
+- [ ] Plug / Phoenix integration
 
 #### Processing
-[x] Default Pipeline
-[x] Basic Directive Processor
-[x] require Directive
-[ ] require_tree Directive
-[ ] require_directory Directive
-[ ] require_self Directive
-[ ] link Directive
-[ ] depend_on Directive
-[ ] depend_on_asset Directive
-[ ] stub Directive
-[ ] node_module Directive
-[ ] Custom Directives
-[x] Bundle Processor
-[ ] SCSS Processor
-[ ] Babel Processor
-[ ] CoffeeScript Processor
-[ ] Compressor
-[ ] Uglifier Processor
-[ ] Minifier Processor
-[ ] SourceMaps Processor
+- [x] Default Pipeline
+- [x] Basic Directive Processor
+- [x] require Directive
+- [ ] require_tree Directive
+- [ ] require_directory Directive
+- [ ] require_self Directive
+- [ ] link Directive
+- [ ] depend_on Directive
+- [ ] depend_on_asset Directive
+- [ ] stub Directive
+- [ ] node_module Directive
+- [ ] Custom Directives
+- [x] Bundle Processor
+- [ ] SCSS Processor
+- [ ] Babel Processor
+- [ ] CoffeeScript Processor
+- [ ] Compressor
+- [ ] Uglifier Processor
+- [ ] Minifier Processor
+- [ ] SourceMaps Processor
