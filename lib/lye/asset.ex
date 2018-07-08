@@ -21,29 +21,34 @@ defmodule Lye.Asset do
     %Asset{}
   end
 
-  def new(logical_asset_path, environment = %Environment{}) do
-    case Environment.resolve(environment, logical_asset_path) do
-      {:ok, full_asset_path} ->
-
-        %Asset{
-          name: Path.basename(logical_asset_path),
-          data: File.read!(full_asset_path),
-          type: MIME.from_path(full_asset_path),
-          content_type: MIME.from_path(full_asset_path),
-          source_path: full_asset_path,
-        }
-
-      _ -> nil
-    end
+  def new(name) do
+    %Asset{
+      name: name
+    }
   end
 
-  def process(asset = %Asset{type: mime_type}, environment = %Environment{}) do
-    IO.puts("Processing #{asset.name}")
+  def new(name, load_path) do
+    # Generate the full source path
+    source_path = Path.expand(name, load_path)
+    # Read asset from disk and set fields
+    %{Asset.new(name) |
+      data: File.read!(source_path),
+      load_path: load_path,
+      type: MIME.from_path(source_path),
+      content_type: MIME.from_path(source_path),
+      source_path: source_path
+    }
+  end
 
-    pipeline = Lye.Processing.default_pipeline(environment, mime_type)
-    asset = Enum.reduce(pipeline, asset, &Lye.Processing.execute_processor/2)
+  def compile(asset = %Asset{}, environment = %Environment{}) do
+    pipeline = Lye.Processing.default_pipeline(environment, asset.type)
+    {asset, _enviroment} = Enum.reduce(pipeline, {asset, environment}, &Lye.Processing.execute_processor/2)
 
     %{asset | compiled: true}
+  end
+
+  def set_type(asset = %Asset{}, type) do
+    %{asset | type: type}
   end
 
   def fingerprint(%Asset{data: data}) do

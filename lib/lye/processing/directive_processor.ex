@@ -1,18 +1,30 @@
 defmodule Lye.Processing.DirectiveProcessor do
   use Private
-  alias Lye.Processing.Processor
+  alias Lye.Processor
+  alias Lye.Environment
   alias Lye.Asset
 
   @behaviour Processor
   @directivePattern ~r/^ *(\/\/=|\*=|#=) (?<directive>\w+) (?<args>.+)$/
 
-  def call(asset = %Asset{}) do
+  def call(asset = %Asset{}, environment = %Environment{}) do
+    # Split asset data into lines that contain directives and content lines
     {directives, content} = find_directives(asset.data)
 
-    asset = directives |> Enum.reduce(asset, &process_directive/2)
+    # Process each directive line
+    asset =
+      directives
+      |> Enum.reduce(asset, &process_directive/2)
+
+    # Compile content lines back into data
     filtered_data = Enum.join(content, "\n")
 
-    %{asset | data: filtered_data}
+    # Update asset and enviroment
+    updated_asset = %{asset | data: filtered_data}
+    updated_environment = environment |> Environment.put_asset(updated_asset)
+
+    # Return
+    {updated_asset, updated_environment}
   end
 
   # Helper functions - need to be tested, but are not part of public API
@@ -33,6 +45,7 @@ defmodule Lye.Processing.DirectiveProcessor do
       lines = String.split(data, ~r/\R/)
       {directives, other} = lines |> Enum.split_with(&is_directive_line?/1)
 
+      # Return
       {directives, other}
     end
 

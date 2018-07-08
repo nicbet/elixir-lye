@@ -71,13 +71,6 @@ defmodule Lye.Environment do
     Enum.uniq(entry_points)
   end
 
-  defp add_to_processors_map(map = %{}, key, entry) do
-    case Map.fetch(map, key) do
-      {:ok, entries} -> [entry | entries] |> Enum.dedup()
-      :error -> [entry]
-    end
-  end
-
   @doc """
   Register the given pre-processor with the specified MIME type
   """
@@ -133,36 +126,12 @@ defmodule Lye.Environment do
   end
 
   @doc """
-  A shortcut that resolves an asset by the given logical path
-  and then creates and processes such Asset.
+  Add asset to the assets map
   """
-  def load(environment = %Environment{asset_map: assets}, logical_asset_path) do
-    IO.puts("* Attempting to load #{logical_asset_path}")
-    asset =
-      case resolve(environment, logical_asset_path) do
-        {:error, _} ->
-          nil
-        {:ok, load_path} ->
-          full_asset_path = Path.expand(logical_asset_path, load_path)
-          IO.puts "* Resolved to #{load_path}/#{logical_asset_path}"
-          # Return asset
-          %Asset{
-            name: logical_asset_path,
-            data: File.read!(full_asset_path),
-            type: MIME.from_path(full_asset_path),
-            content_type: MIME.from_path(full_asset_path),
-            source_path: full_asset_path,
-          }
-      end
-
-    # Insert into the asset_map
-    updated_assets = Map.put(assets, logical_asset_path, asset)
-
-    case asset do
-      nil -> environment
-      _ -> %{environment | asset_map: updated_assets}
-    end
-   end
+  def put_asset(environment = %Environment{}, asset = %Asset{}) do
+    updated_asset_map = Map.put(environment.asset_map, asset.name, asset)
+    %{environment | asset_map: updated_asset_map}
+  end
 
   @doc """
   Resolve an Asset given by it's logical name within the Environment
@@ -181,15 +150,36 @@ defmodule Lye.Environment do
       1 ->
         {:ok, List.first(matching_load_paths)}
       count ->
-        {:error, "Ambiguous #{logical_asset_path} found in "}
+        {:error, "Ambiguous #{logical_asset_path} found in #{count} load paths!"}
     end
   end
 
   @doc """
-  Processes an Asset - that is, it invokes a Processor pipeline, where
-  each processor transforms the asset.
+  Load an Asset within the environment
   """
-  def process(environment = %Environment{}, asset = %Asset{}) do
+  def load(environment = %Environment{}, asset) when is_bitstring(asset) do
+    IO.puts("* Attempting to load #{asset}")
+    asset = case resolve(environment, asset) do
+      {:ok, load_path} ->
+        Asset.new(asset, load_path)
+        |> Asset.compile(environment)
+      {:error, message} ->
+        IO.puts("Could not resolve #{asset}: #{message}")
+        Asset.new()
+    end
+    
+    # Insert into the asset_map
+    updated_assets = Map.put(environment.asset_map, asset.name, asset)
 
+    # Return
+    {asset, %{environment | asset_map: updated_assets}}
+  end
+
+  # Helper function for adding processor to map of key -> processor list
+  defp add_to_processors_map(map = %{}, key, entry) do
+    case Map.fetch(map, key) do
+      {:ok, entries} -> [entry | entries] |> Enum.dedup()
+      :error -> [entry]
+    end
   end
 end

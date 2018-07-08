@@ -10,7 +10,6 @@ defmodule Lye.Application do
     children = [
       # Starts a worker by calling: Lye.Worker.start_link(arg)
       # {Lye.Worker, arg},
-      {Lye, Lye.Environment.phoenix()}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

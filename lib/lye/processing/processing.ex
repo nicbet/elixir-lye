@@ -1,12 +1,13 @@
 defmodule Lye.Processing do
 
+  alias Lye.Asset
   alias Lye.Environment
 
-  def debug_pipeline(env = %Environment{}, mime_type) do
+  def debug_pipeline(_env = %Environment{}, _mime_type) do
     []
   end
 
-  def source_pipline(env = %Environment{}, mime_type) do
+  def source_pipline(_env = %Environment{}, _mime_type) do
     []
   end
 
@@ -27,48 +28,49 @@ defmodule Lye.Processing do
     processors = post_processors_for(env, mime_type) ++ processors
     processors = transform_processors_for(env, mime_type) ++ processors
     processors = pre_processors_for(env, mime_type) ++ processors
+    processors = [Lye.Processing.FileLoadProcessor] ++ processors
 
     processors
   end
 
   def pre_processors_for(env = %Environment{}, mime_type) do
-    case result = Map.fetch(env.pre_processors, mime_type) do
+    case Map.fetch(env.pre_processors, mime_type) do
       {:ok, processors} -> processors
       :error -> []
     end
   end
 
   def transform_processors_for(env = %Environment{}, mime_type) do
-    case result = Map.fetch(env.transform_processors, mime_type) do
+    case Map.fetch(env.transform_processors, mime_type) do
       {:ok, processors} -> processors
       :error -> []
     end
   end
 
   def post_processors_for(env = %Environment{}, mime_type) do
-    case result = Map.fetch(env.post_processors, mime_type) do
+    case Map.fetch(env.post_processors, mime_type) do
       {:ok, processors} -> processors
       :error -> []
     end
   end
 
   def compress_processors_for(env = %Environment{}, mime_type) do
-    case result = Map.fetch(env.compress_processors, mime_type) do
+    case Map.fetch(env.compress_processors, mime_type) do
       {:ok, processors} -> processors
       :error -> []
     end
   end
 
   def bundle_processors_for(env = %Environment{}, mime_type) do
-    case result = Map.fetch(env.bundle_processors, mime_type) do
+    case Map.fetch(env.bundle_processors, mime_type) do
       {:ok, processors} -> processors
       :error -> []
     end
   end
 
-  def execute_processor(processor, asset) do
+  def execute_processor(processor, {asset = %Asset{}, enviroment = %Environment{}}) do
     IO.puts "  Invoking processor #{processor}"
-    asset = processor.call(asset)
+    processor.call(asset, enviroment)
   end
 
 end

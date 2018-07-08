@@ -23,9 +23,10 @@ For now, you can execute the test suite with:
 mix test
 ```
 
-and when used in your own program:
+Load an asset from a load path
 ```elixir
-Lye.fetch_asset("app.js")
+env = Lye.Environment.phoenix()
+Lye.Environment.load(env, "app.js")
 ```
 
 ## Dev Notes
