@@ -7,7 +7,8 @@ defmodule Lye.Environment do
             compress_processors: %{},
             pre_processors: %{},
             post_processors: %{},
-            entry_points: []
+            entry_points: [],
+            root_path: "."
 
   alias Lye.Environment
   alias Lye.Asset
@@ -22,11 +23,15 @@ defmodule Lye.Environment do
     %Environment{}
   end
 
+  def new(root_path) do
+    %Environment{root_path: root_path}
+  end
+
   @doc """
   Generate a pre-configured `Environment` for the `Phoenix` framework.
   """
-  def phoenix() do
-    Environment.new()
+  def phoenix(root_path \\ ".") do
+    Environment.new(root_path)
     |> register_preprocessor("application/javascript", Lye.Processing.DirectiveProcessor)
     |> register_bundler("application/javascript", Lye.Processing.BundleProcessor)
     |> register_preprocessor("text/css", Lye.Processing.DirectiveProcessor)
@@ -43,9 +48,8 @@ defmodule Lye.Environment do
   Prepends the load_path to the existing list of paths.
   That is okay since `load_paths/1` returns the reversed list
   """
-  def append_path(env = %Environment{paths: paths}, load_path) do
-
-    %{env | paths: [load_path | paths]}
+  def append_path(env = %Environment{paths: paths, root_path: root_path}, load_path) do
+    %{env | paths: [Path.join(root_path, load_path) | paths]}
   end
 
   @doc """
@@ -167,7 +171,7 @@ defmodule Lye.Environment do
         IO.puts("Could not resolve #{asset}: #{message}")
         Asset.new()
     end
-    
+
     # Insert into the asset_map
     updated_assets = Map.put(environment.asset_map, asset.name, asset)
 
