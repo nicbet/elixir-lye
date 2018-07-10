@@ -1,4 +1,14 @@
 defmodule Lye.Environment do
+  @moduledoc """
+  The `Environment` is the core structure in Lye. It holds a copy of all
+  assets that are loaded into the environment, and defines all processors
+  that are available for a specific asset mime type. When processors transform
+  an Asset, that is done within a given environment, and processors return
+  an updated environment struct.
+
+  A default `Environment` pre-configured for Phoenix Framework projects is
+  available through the `Environment.phoenix/1` function.
+  """
   defstruct paths: [],
             asset_map: %{},
             directives: [],
@@ -20,7 +30,7 @@ defmodule Lye.Environment do
   Create a new, empty `Environment`
   """
   def new() do
-    %Environment{}
+    %Environment{root_path: "."}
   end
 
   def new(root_path) do
@@ -151,8 +161,10 @@ defmodule Lye.Environment do
     case Enum.count(matching_load_paths) do
       0 ->
         {:error, "Could not resolve #{logical_asset_path}"}
+
       1 ->
         {:ok, List.first(matching_load_paths)}
+
       count ->
         {:error, "Ambiguous #{logical_asset_path} found in #{count} load paths!"}
     end
@@ -163,14 +175,17 @@ defmodule Lye.Environment do
   """
   def load(environment = %Environment{}, asset) when is_bitstring(asset) do
     IO.puts("* Attempting to load #{asset}")
-    asset = case resolve(environment, asset) do
-      {:ok, load_path} ->
-        Asset.new(asset, load_path)
-        |> Asset.compile(environment)
-      {:error, message} ->
-        IO.puts("Could not resolve #{asset}: #{message}")
-        Asset.new()
-    end
+
+    asset =
+      case resolve(environment, asset) do
+        {:ok, load_path} ->
+          Asset.new(asset, load_path)
+          |> Asset.compile(environment)
+
+        {:error, message} ->
+          IO.puts("Could not resolve #{asset}: #{message}")
+          Asset.new()
+      end
 
     # Insert into the asset_map
     updated_assets = Map.put(environment.asset_map, asset.name, asset)

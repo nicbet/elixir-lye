@@ -16,7 +16,8 @@ defmodule Lye.Processing.BundleProcessor do
     asset_processors = Lye.Processing.processors_for(environment, asset.type)
 
     # Execute all processors
-    {updated_asset, updated_environment} = Enum.reduce(asset_processors, {asset, environment}, &Lye.Processing.execute_processor/2)
+    {updated_asset, updated_environment} =
+      Enum.reduce(asset_processors, {asset, environment}, &Lye.Processing.execute_processor/2)
 
     # Bundle contents
     bundle_required(updated_asset, updated_environment)
@@ -31,7 +32,9 @@ defmodule Lye.Processing.BundleProcessor do
   defp merge(dependency, {asset = %Asset{data: data, type: type}, environment = %Environment{}}) do
     # Find extensions matching the asset's MIME type
     case MIME.extensions(type) |> List.first() do
-      nil -> {asset, environment}
+      nil ->
+        {asset, environment}
+
       extension ->
         {dep, updated_enviroment} = Environment.load(environment, dependency <> "." <> extension)
         merged_data = dep.data <> data
@@ -39,5 +42,4 @@ defmodule Lye.Processing.BundleProcessor do
         {updated_asset, updated_enviroment}
     end
   end
-
 end

@@ -1,4 +1,9 @@
 defmodule Lye.Processing.DirectiveProcessor do
+  @moduledoc """
+  The `DirectiveProcessor` parses the assets contents for directives
+  and executes those directives. The processed asset will have all
+  directive lines removed.
+  """
   use Private
   alias Lye.Processor
   alias Lye.Environment
